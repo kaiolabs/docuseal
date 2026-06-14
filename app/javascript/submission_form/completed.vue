@@ -97,15 +97,9 @@
     </div>
     <div
       v-if="attribution"
-      class="text-center mt-4"
+      class="text-center mt-4 text-sm text-neutral-500"
     >
-      {{ t('powered_by') }}
-      <a
-        href="https://www.docuseal.com/start"
-        target="_blank"
-        class="underline"
-      >OpenSeal</a> - {{
-        t('open_source_documents_software') }}
+      Langdom Instituto de Idiomas · Vera Cruz, RS
     </div>
   </div>
 </template>
