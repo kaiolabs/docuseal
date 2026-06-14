@@ -110,7 +110,7 @@ module Api
 
       # Move documents and fields from temp to main template
       temp_template.documents.each do |document|
-        document.update!(template: template)
+        document.update!(record: template)
       end
 
       # Merge schema entries

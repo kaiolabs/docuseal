@@ -131,7 +131,7 @@ module Api
       Templates::CreateFromPdfTags.call(temp_template, pdf_data)
 
       temp_template.documents.each do |document|
-        document.update!(template: template)
+        document.update!(record: template)
       end
 
       template.schema = (template.schema || []) + (temp_template.schema || [])
