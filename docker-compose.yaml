@@ -1,0 +1,46 @@
+services:
+  app:
+    depends_on:
+      postgres:
+        condition: service_healthy
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: kaiolabs/openseal:latest
+    restart: unless-stopped
+    ports:
+      - 4000:3000
+    volumes:
+      - ./docuseal_data:/data/docuseal
+    environment:
+      - FORCE_SSL=${HOST:-}
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/docuseal
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE:-}
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    volumes:
+      - ./pg_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: docuseal
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  caddy:
+    image: caddy:latest
+    restart: unless-stopped
+    command: caddy reverse-proxy --from ${HOST} --to app:3000
+    ports:
+      - 80:80
+      - 443:443
+      - 443:443/udp
+    volumes:
+      - ./caddy_data:/data/caddy
+    environment:
+      - HOST=${HOST}
