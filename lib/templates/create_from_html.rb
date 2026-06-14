@@ -25,7 +25,7 @@ module Templates
       pdf = HexaPDF::Document.new(io: StringIO.new(pdf_data))
       pages = pdf.pages.map { |p| { width: p.box.width, height: p.box.height } }
 
-      build_template_data(template, document, parsed[:fields], detected_fields, pages)
+      build_template_data(template, document, parsed[:fields], detected_fields, pages, render_result['documentHeight'])
 
       template.save!
 
@@ -103,7 +103,7 @@ module Templates
       template.documents.create!(blob: blob)
     end
 
-    def build_template_data(template, document, parsed_fields, detected_fields, pages)
+    def build_template_data(template, document, parsed_fields, detected_fields, pages, document_height_px = nil)
       submitter_uuid = SecureRandom.uuid
 
       template.submitters = [{ 'name' => 'First Party', 'uuid' => submitter_uuid }]
@@ -124,14 +124,14 @@ module Templates
           field['options'] = pf[:options].map { |opt| { 'value' => opt, 'uuid' => SecureRandom.uuid } }
         end
 
-        area = calculate_field_area(detected, pages, document)
+        area = calculate_field_area(detected, pages, document, document_height_px)
         field['areas'] = [area] if area
 
         field
       end
     end
 
-    def calculate_field_area(detected, pages, document)
+    def calculate_field_area(detected, pages, document, document_height_px = nil)
       return nil if detected.blank?
       return nil if detected['width'].to_f <= 0 || detected['height'].to_f <= 0
 
@@ -142,33 +142,45 @@ module Templates
       pdf_h = page_info[:height].to_f
 
       # Puppeteer renders at 96 CSS DPI; PDF points are 72 DPI
-      # Scale factor: 96/72 = 4/3
       scale = 96.0 / 72.0
 
       page_width_px = pdf_w * scale
-      page_height_px = pdf_h * scale
+      page_heights_px = pages.map { |p| p[:height].to_f * scale }
+      total_pdf_height_px = page_heights_px.sum
 
-      # Account for the body margin (40px on each side in our default CSS)
       field_x = detected['x'].to_f
       field_y = detected['y'].to_f
       field_w = detected['width'].to_f
       field_h = detected['height'].to_f
 
-      # Determine which page the field is on
-      page_index = (field_y / page_height_px).floor
-      page_index = [page_index, pages.size - 1].min
-      page_index = [page_index, 0].max
+      doc_height = document_height_px.to_f
+      doc_height = field_y + field_h + 1 if doc_height <= 0
 
-      y_on_page = field_y - (page_index * page_height_px)
+      # Map HTML document position proportionally to PDF page layout
+      relative_y = (field_y / doc_height).clamp(0.0, 1.0)
+      absolute_pdf_y = relative_y * total_pdf_height_px
+
+      page_index = 0
+      y_on_page = absolute_pdf_y
+      cumulative = 0.0
+
+      page_heights_px.each_with_index do |ph, i|
+        if absolute_pdf_y < cumulative + ph || i == page_heights_px.size - 1
+          page_index = i
+          y_on_page = absolute_pdf_y - cumulative
+          break
+        end
+        cumulative += ph
+      end
 
       {
         'uuid' => SecureRandom.uuid,
         'attachment_uuid' => document.uuid,
         'page' => page_index,
         'x' => (field_x / page_width_px).clamp(0.0, 0.95).round(6),
-        'y' => (y_on_page / page_height_px).clamp(0.0, 0.95).round(6),
+        'y' => (y_on_page / page_heights_px[page_index]).clamp(0.0, 0.95).round(6),
         'w' => (field_w / page_width_px).clamp(0.01, 1.0).round(6),
-        'h' => (field_h / page_height_px).clamp(0.01, 1.0).round(6)
+        'h' => (field_h / page_heights_px[page_index]).clamp(0.01, 1.0).round(6)
       }
     end
   end
