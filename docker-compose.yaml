@@ -8,8 +8,8 @@ services:
       dockerfile: Dockerfile
     image: kaiolabs/openseal:latest
     restart: unless-stopped
-    ports:
-      - 4000:3000
+    expose:
+      - "3000"
     volumes:
       - ./docuseal_data:/data/docuseal
     environment:
@@ -31,16 +31,3 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-
-  caddy:
-    image: caddy:latest
-    restart: unless-stopped
-    command: caddy reverse-proxy --from ${HOST} --to app:3000
-    ports:
-      - 80:80
-      - 443:443
-      - 443:443/udp
-    volumes:
-      - ./caddy_data:/data/caddy
-    environment:
-      - HOST=${HOST}
