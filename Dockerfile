@@ -48,8 +48,12 @@ ENV OPENSSL_CONF=/etc/openssl_legacy.cnf
 
 WORKDIR /app
 
-RUN apk add --no-cache libpq vips redis onnxruntime fontconfig && \
+RUN apk add --no-cache libpq vips redis onnxruntime fontconfig \
+    nodejs npm chromium nss freetype harfbuzz ca-certificates ttf-freefont && \
     rm -f /usr/bin/onnx_test_runner /usr/bin/onnxruntime_test
+
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
 RUN addgroup -g 2000 docuseal && adduser -u 2000 -G docuseal -s /bin/sh -D -h /home/docuseal docuseal
 
@@ -85,6 +89,9 @@ COPY --from=download /pdfium-linux/lib/libpdfium.so /usr/lib/libpdfium.so
 COPY --from=download /pdfium-linux/licenses/pdfium.txt /usr/lib/libpdfium-LICENSE.txt
 COPY --chown=docuseal:docuseal --from=download /model.onnx /app/tmp/model.onnx
 COPY --chown=docuseal:docuseal --from=webpack /app/public/packs ./public/packs
+
+RUN cd /app && npm install puppeteer@24.43.0 --omit=dev --no-save && \
+    chown -R docuseal:docuseal /app/node_modules
 
 RUN mkdir -p /app/public/fonts && ln -sf /fonts/DancingScript-Regular.otf /app/public/fonts/DancingScript-Regular.otf && \
     mkdir -p /usr/share/fonts/noto && ln -sf /fonts/GoNotoKurrent-Regular.ttf /usr/share/fonts/noto/GoNotoKurrent-Regular.ttf && ln -sf /fonts/GoNotoKurrent-Bold.ttf /usr/share/fonts/noto/GoNotoKurrent-Bold.ttf && fc-cache -f && \
