@@ -159,28 +159,24 @@ module Templates
 
       x_norm = ((field_x - content_left) / content_width).clamp(0.0, 0.95)
 
-      if detected.key?('page') && detected.key?('yOnPage')
-        page_index = detected['page'].to_i.clamp(0, page_heights_px.size - 1)
-        y_on_page = detected['yOnPage'].to_f
-      else
-        doc_height = document_height_px.to_f
-        doc_height = field_y + field_h + 1 if doc_height <= 0
+      doc_height = document_height_px.to_f
+      doc_height = field_y + field_h + 1 if doc_height <= 0
 
-        relative_y = (field_y / doc_height).clamp(0.0, 1.0)
-        absolute_pdf_y = relative_y * total_pdf_height_px
+      # Map position proportionally across the full PDF height (works for multi-page docs)
+      relative_y = (field_y / doc_height).clamp(0.0, 1.0)
+      absolute_pdf_y = relative_y * total_pdf_height_px
 
-        page_index = 0
-        y_on_page = absolute_pdf_y
-        cumulative = 0.0
+      page_index = 0
+      y_on_page = absolute_pdf_y
+      cumulative = 0.0
 
-        page_heights_px.each_with_index do |ph, i|
-          if absolute_pdf_y < cumulative + ph || i == page_heights_px.size - 1
-            page_index = i
-            y_on_page = absolute_pdf_y - cumulative
-            break
-          end
-          cumulative += ph
+      page_heights_px.each_with_index do |ph, i|
+        if absolute_pdf_y < cumulative + ph || i == page_heights_px.size - 1
+          page_index = i
+          y_on_page = absolute_pdf_y - cumulative
+          break
         end
+        cumulative += ph
       end
 
       {
