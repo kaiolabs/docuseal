@@ -1,200 +1,102 @@
 <p align="center">
-  <img src="public/logo.png" alt="OpenSeal" width="200" />
+  <img src="public/logo.svg" alt="Langdom Contracts" width="280" />
 </p>
 <h1 align="center" style="border-bottom: none">
-  OpenSeal
+  Langdom Contracts
 </h1>
 <h3 align="center">
-  Self-hosted document signing with all features unlocked — built on DocuSeal
+  Plataforma de assinatura digital do Langdom Instituto de Idiomas
 </h3>
 <p align="center">
-  <em>API-first • Multi-tenant ready • Embeddable • Zero per-document fees</em>
+  <em>API-first • Self-hosted • Embeddable • Contratos de matrícula digitais</em>
+</p>
+
+<p align="center">
+  <strong>Produção:</strong> <a href="https://contracts.langdom.com.br">contracts.langdom.com.br</a>
 </p>
 
 ---
 
-> **Built on [DocuSeal](https://github.com/docusealco/docuseal)** — the excellent open-source document signing platform created by [DocuSeal LLC](https://www.docuseal.com). This project extends the OSS edition with all Pro features unlocked for self-hosted use. All credit for the core platform goes to the DocuSeal team. If you need a managed cloud solution, check out [DocuSeal Cloud](https://www.docuseal.com/pricing).
+## O que é
 
----
+**Langdom Contracts** é a plataforma interna de assinatura digital do Langdom, usada para contratos de matrícula e outros documentos. É baseada em um fork self-hosted do DocuSeal, com branding e integração customizados para o ecossistema Langdom.
 
-## What is OpenSeal?
+## Funcionalidades principais
 
-OpenSeal is a self-hosted fork of [DocuSeal](https://github.com/docusealco/docuseal) with every Pro/Enterprise feature gate removed and fully implemented. No usage-based pricing, no feature paywalls — just a complete document signing platform you own and control.
+- Builder de formulários PDF (WYSIWYG)
+- 16+ tipos de campo (Assinatura, Data, Arquivo, Checkbox, Telefone, etc.)
+- Múltiplos signatários por documento
+- E-mails automatizados via SMTP
+- Assinatura PDF com certificado
+- Verificação de assinatura e trilha de auditoria
+- Experiência mobile otimizada
+- API REST e componentes embeddable
+- API de templates HTML (usada pelo backend Langdom)
 
-It's designed for developers and businesses who want to embed document signing into their own products (SaaS platforms, HRMS, CRMs, legal tech) via API and embeddable components, with full multi-tenant isolation.
-
-## Features
-
-Everything in DocuSeal OSS, plus all Pro features — unlocked and working:
-
-### Core Platform
-
-- PDF form fields builder (WYSIWYG)
-- 16+ field types (Signature, Date, File, Checkbox, Phone, Payment, etc.)
-- Multiple submitters per document with ordered/random signing
-- Automated emails via SMTP, Gmail, or Outlook
-- Files storage on disk, AWS S3, Google Storage, or Azure Cloud
-- Automatic PDF eSignature with trusted certificate
-- PDF signature verification and audit log
-- Mobile-optimized signing experience
-- 7 UI languages, signing available in 14 languages
-- Easy to deploy in minutes
-
-### Unlocked Pro Features
-
-- **Company logo & white-label** — custom branding on forms and emails
-- **User roles** — Admin, Editor, and Viewer with granular permissions
-- **Automated reminders** — configurable first/second/third reminder intervals
-- **Conditional fields & formulas** — dynamic forms with calculated values
-- **Bulk send** — CSV/XLSX spreadsheet import for batch signature requests
-- **Stripe payments** — collect payments during signing (0% platform fee)
-- **API & Webhooks** — full REST API for templates, submissions, and submitters
-- **Embedded signing form** — `<docuseal-form>` Web Component (JS, React, Vue, Angular)
-- **Embedded form builder** — `<docuseal-builder>` Web Component with JWT auth
-- **HTML Template API** — create PDF templates from HTML with field tags
-- **PDF/DOCX Field Tags API** — upload tagged documents, auto-detect fields
-- **Template merge & clone APIs** — combine and duplicate templates programmatically
-- **Email 2FA** — require email verification before form access
-- **Allow decline & delegate** — signers can decline or delegate to another party
-- **Shared link signing & in-person signing**
-- **Witness invitations** — invite a witness to co-sign
-
-### Multi-Tenant Architecture
-
-- Each tenant gets a separate account with isolated data
-- Tenants configure their own SMTP, Stripe, webhooks, and branding via API
-- JWT-authenticated embedded components for tenant-facing UIs
-- Thread-safe — no global state leaks between tenant requests
-- Settings UI hidden in multi-tenant mode (tenants interact via API only)
-
-## Quick Start
-
-### Docker Compose (recommended)
+## Quick Start (desenvolvimento)
 
 ```sh
-git clone https://github.com/iancenry/docuseal.git openseal
-cd openseal
-sudo HOST=your-domain.com docker compose up
-```
-
-This starts OpenSeal with PostgreSQL and Caddy (auto-SSL) on ports 80/443.
-
-### Docker (standalone)
-
-```sh
-docker run --name openseal -p 3000:3000 \
-  -v ./data:/data \
-  -e DATABASE_URL=postgresql://user:pass@host:5432/openseal \
-  docuseal/docuseal
-```
-
-### Local Development
-
-```sh
-# Prerequisites: Ruby (via rbenv), Node.js, PostgreSQL, Redis
-git clone https://github.com/iancenry/docuseal.git openseal
-cd openseal
+# Pré-requisitos: Ruby, Node.js, PostgreSQL, Redis
 bin/setup
-DATABASE_URL=postgresql://localhost/openseal_dev REDIS_URL=redis://localhost:6379 bin/rails s
+DATABASE_URL=postgresql://localhost/docuseal_development REDIS_URL=redis://localhost:6379 bin/rails s
 ```
 
-## API Usage
+### Docker Compose
 
-OpenSeal exposes the same API as DocuSeal Pro. Authenticate with `X-Auth-Token` header.
+```sh
+sudo HOST=contracts.langdom.com.br docker compose up
+```
 
-### Create a template from HTML
+## API
+
+Autenticação via header `X-Auth-Token`. A API é compatível com o formato DocuSeal.
+
+### Criar template a partir de HTML
 
 ```bash
-curl -X POST http://localhost:3000/api/templates/html \
+curl -X POST https://contracts.langdom.com.br/api/templates/html \
   -H "X-Auth-Token: YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "html": "<h1>Agreement</h1><p>I, {{Full Name}}, agree.</p><p>{{Signature|signature}}</p>",
-    "name": "My Template"
+    "html": "<h1>Contrato</h1><p>{{Nome}}, concordo.</p><p>{{Assinatura|signature}}</p>",
+    "name": "Contrato Matrícula"
   }'
 ```
 
-### Send for signature
+### Enviar para assinatura
 
 ```bash
-curl -X POST http://localhost:3000/api/submissions \
+curl -X POST https://contracts.langdom.com.br/api/submissions \
   -H "X-Auth-Token: YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "template_id": 1,
     "send_email": true,
-    "submitters": [{ "role": "First Party", "email": "signer@example.com" }]
+    "submitters": [{ "role": "Aluno", "email": "aluno@example.com" }]
   }'
 ```
 
-### Embed in your app
+## Documentação interna
 
-```html
-<script src="https://your-openseal-host.com/js/docuseal.js"></script>
+| Documento | Descrição |
+| --------- | --------- |
+| [Implementation Plan](docs/IMPLEMENTATION_PLAN.md) | Fases de implementação |
+| [Embedding Guide](docs/EMBEDDING.md) | Arquitetura de embedding |
+| [Stripe Payments](docs/STRIPE_PAYMENTS.md) | Integração Stripe |
 
-<!-- Signing form -->
-<docuseal-form
-  data-src="https://your-openseal-host.com/d/TEMPLATE_SLUG"
-  data-email="signer@example.com"
->
-</docuseal-form>
+## Paleta visual (Langdom)
 
-<!-- Form builder (requires JWT token) -->
-<docuseal-builder
-  data-token="JWT_TOKEN"
-  data-host="https://your-openseal-host.com"
->
-</docuseal-builder>
-```
+| Token | Cor |
+| ----- | --- |
+| Primary | `#1E3A5F` |
+| Primary Light | `#2563EB` |
+| Surface | `#F8FAFC` |
+| Card | `#FFFFFF` |
 
-## Documentation
+## Créditos
 
-| Document                                                          | Description                                                                        |
-| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| [Implementation Plan (Part 1)](docs/IMPLEMENTATION_PLAN.md)       | Phases 0–10: all unlocked Pro features                                             |
-| [Implementation Plan (Part 2)](docs/IMPLEMENTATION_PLAN_PART2.md) | Phases 11–15: remaining gaps (one-off submission APIs, ID verification, QeS, etc.) |
-| [Embedding Guide](docs/EMBEDDING.md)                              | Multi-tenant embedding architecture, JWT auth, React examples                      |
-| [Stripe Payments Guide](docs/STRIPE_PAYMENTS.md)                  | Payment integration, webhook setup, multi-tenant Stripe config                     |
-| [DocuSeal API Reference](https://www.docuseal.com/docs/api)       | Full API documentation (upstream, compatible)                                      |
+O motor de assinatura é baseado no projeto open-source [DocuSeal](https://github.com/docusealco/docuseal). O branding, integração e deploy são propriedade do **Langdom Instituto de Idiomas**.
 
-## Implementation Status
+## Licença
 
-| Phase | Feature                                      | Status      |
-| ----- | -------------------------------------------- | ----------- |
-| 0     | Conditional Fields, Formulas, Phone, Payment | ✅ Done     |
-| 1     | Automated Reminders                          | ✅ Done     |
-| 2     | Company Logo & Branding                      | ✅ Done     |
-| 3     | User Roles & Permissions                     | ✅ Done     |
-| 4     | Bulk Send from Spreadsheet                   | ✅ Done     |
-| 5     | Embedded Signing Form & Builder              | ✅ Done     |
-| 6     | HTML Template API                            | ✅ Done     |
-| 7     | PDF/DOCX Field Tags API                      | ✅ Done     |
-| 8     | SMS Verification                             | ⏳ Optional |
-| 9     | Stripe Payments                              | ✅ Done     |
-| 10    | SSO / SAML                                   | ⏳ Optional |
-| 11    | One-off Submission APIs (PDF/DOCX/HTML)      | 🔜 Planned  |
-| 12    | ID Verification & KBA                        | 🔜 Planned  |
-| 13    | EU Qualified Signatures (QeS)                | 🔜 Planned  |
-| 14    | DocuSign Import                              | 🔜 Planned  |
-| 15    | Teams & Tenants UI                           | 🔜 Planned  |
-
-## Acknowledgments
-
-This project would not exist without **[DocuSeal](https://github.com/docusealco/docuseal)** by [DocuSeal LLC](https://www.docuseal.com). The DocuSeal team built an outstanding open-source document signing platform — clean architecture, great API design, and a genuinely useful product. OpenSeal simply extends their work for self-hosted power users.
-
-- **DocuSeal GitHub**: [github.com/docusealco/docuseal](https://github.com/docusealco/docuseal)
-- **DocuSeal Cloud**: [docuseal.com](https://www.docuseal.com)
-- **DocuSeal Discord**: [discord.gg/qygYCDGck9](https://discord.gg/qygYCDGck9)
-
-If you're looking for a managed solution with support, SSO, compliance certifications (SOC 2, HIPAA), and zero operational overhead — **use [DocuSeal Cloud](https://www.docuseal.com/pricing)**. It's a great product.
-
-## License
-
-Distributed under the AGPLv3 License with Section 7(b) Additional Terms requiring original DocuSeal attribution in interactive user interfaces. See [LICENSE](LICENSE) and [LICENSE_ADDITIONAL_TERMS](LICENSE_ADDITIONAL_TERMS) for details.
-Unless otherwise noted, all files © 2023-2026 DocuSeal LLC.
-
-## Tools
-
-- [Signature Maker](https://www.docuseal.com/online-signature)
-- [Sign Document Online](https://www.docuseal.com/sign-documents-online)
-- [Fill PDF Online](https://www.docuseal.com/fill-pdf)
+AGPLv3 com termos adicionais do upstream DocuSeal. Ver [LICENSE](LICENSE) e [LICENSE_ADDITIONAL_TERMS](LICENSE_ADDITIONAL_TERMS).
