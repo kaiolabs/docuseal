@@ -146,6 +146,7 @@ module Templates
 
       page_width_px = pdf_w * scale
       page_heights_px = pages.map { |p| p[:height].to_f * scale }
+      total_pdf_height_px = page_heights_px.sum
 
       field_x = detected['x'].to_f
       field_y = detected['y'].to_f
@@ -158,20 +159,36 @@ module Templates
 
       x_norm = ((field_x - content_left) / content_width).clamp(0.0, 0.95)
 
-      doc_height = document_height_px.to_f
-      doc_height = field_y + field_h + 1 if doc_height <= 0
+      if detected.key?('page') && detected.key?('yOnPage')
+        page_index = detected['page'].to_i.clamp(0, page_heights_px.size - 1)
+        y_on_page = detected['yOnPage'].to_f
+      else
+        doc_height = document_height_px.to_f
+        doc_height = field_y + field_h + 1 if doc_height <= 0
 
-      num_pages = page_heights_px.size
-      position_in_pages = (field_y / doc_height) * num_pages
-      page_index = [position_in_pages.floor, num_pages - 1].min.clamp(0, num_pages - 1)
-      y_norm = (position_in_pages - page_index).clamp(0.0, 0.95)
+        relative_y = (field_y / doc_height).clamp(0.0, 1.0)
+        absolute_pdf_y = relative_y * total_pdf_height_px
+
+        page_index = 0
+        y_on_page = absolute_pdf_y
+        cumulative = 0.0
+
+        page_heights_px.each_with_index do |ph, i|
+          if absolute_pdf_y < cumulative + ph || i == page_heights_px.size - 1
+            page_index = i
+            y_on_page = absolute_pdf_y - cumulative
+            break
+          end
+          cumulative += ph
+        end
+      end
 
       {
         'uuid' => SecureRandom.uuid,
         'attachment_uuid' => document.uuid,
         'page' => page_index,
         'x' => x_norm.round(6),
-        'y' => y_norm.round(6),
+        'y' => (y_on_page / page_heights_px[page_index]).clamp(0.0, 0.95).round(6),
         'w' => (field_w / content_width).clamp(0.01, 1.0).round(6),
         'h' => (field_h / page_heights_px[page_index]).clamp(0.01, 1.0).round(6)
       }
