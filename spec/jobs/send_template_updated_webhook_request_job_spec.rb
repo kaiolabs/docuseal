@@ -32,7 +32,7 @@ RSpec.describe SendTemplateUpdatedWebhookRequestJob do
         },
         headers: {
           'Content-Type' => 'application/json',
-          'User-Agent' => 'DocuSeal.com Webhook'
+          'User-Agent' => 'Langdom Contracts Webhook'
         }
       ).once
     end
@@ -50,7 +50,7 @@ RSpec.describe SendTemplateUpdatedWebhookRequestJob do
         },
         headers: {
           'Content-Type' => 'application/json',
-          'User-Agent' => 'DocuSeal.com Webhook',
+          'User-Agent' => 'Langdom Contracts Webhook',
           'X-Secret-Header' => 'secret_value'
         }
       ).once

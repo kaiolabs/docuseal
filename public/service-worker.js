@@ -1,9 +1,9 @@
 self.addEventListener('install', () => {
-  console.log('DocuSeal App installed')
+  console.log('Langdom Contracts App installed')
 })
 
 self.addEventListener('activate', () => {
-  console.log('DocuSeal App activated')
+  console.log('Langdom Contracts App activated')
 })
 
 self.addEventListener('fetch', (event) => {

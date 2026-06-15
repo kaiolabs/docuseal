@@ -178,7 +178,7 @@ module DocusignImport
     documents = ds_template['documents'] || []
     recipients = ds_template['recipients']&.dig('signers') || []
 
-    # Build submitter mapping: DocuSign recipientId → OpenSeal submitter_uuid
+    # Build submitter mapping: DocuSign recipientId → Langdom Contracts submitter_uuid
     submitter_map = {}
     submitters = recipients.map do |r|
       uuid = SecureRandom.uuid

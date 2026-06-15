@@ -1,18 +1,18 @@
 # frozen_string_literal: true
 
 module Docuseal
-  PRODUCT_URL = 'https://www.docuseal.com'
+  PRODUCT_URL = ENV.fetch('PRODUCT_URL', 'https://contracts.langdom.com.br')
   PRODUCT_EMAIL_URL = ENV.fetch('PRODUCT_EMAIL_URL', PRODUCT_URL)
   NEWSLETTER_URL = "#{PRODUCT_URL}/newsletters".freeze
   ENQUIRIES_URL = "#{PRODUCT_URL}/enquiries".freeze
-  PRODUCT_NAME = 'OpenSeal'
+  PRODUCT_NAME = 'Langdom Contracts'
   DEFAULT_APP_URL = ENV.fetch('APP_URL', 'http://localhost:4000')
-  GITHUB_URL = 'https://github.com/iancenry/docuseal'
-  DISCORD_URL = 'https://discord.gg/qygYCDGck9'
-  TWITTER_URL = 'https://twitter.com/docusealco'
-  TWITTER_HANDLE = '@docusealco'
-  CHATGPT_URL = "#{PRODUCT_URL}/chat".freeze
-  SUPPORT_EMAIL = 'support@docuseal.com'
+  GITHUB_URL = PRODUCT_URL
+  DISCORD_URL = nil
+  TWITTER_URL = nil
+  TWITTER_HANDLE = nil
+  CHATGPT_URL = PRODUCT_URL
+  SUPPORT_EMAIL = ENV.fetch('SUPPORT_EMAIL', 'suporte@langdom.com.br')
   HOST = ENV.fetch('HOST', 'localhost')
   AATL_CERT_NAME = 'docuseal_aatl'
   CONSOLE_URL = if Rails.env.development?

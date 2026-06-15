@@ -3,7 +3,7 @@
     class="flex absolute lg:text-base -outline-offset-1 focus-visible:outline-blue-500 focus-visible:outline-2 focus-visible:outline field-area"
     dir="auto"
     :style="[computedStyle, fontStyle]"
-    :class="{ 'cursor-default': !submittable, 'border border-[#BFDBFE] bg-[#EFF6FF] cursor-pointer': submittable, 'border border-[#BFDBFE]': !isActive && submittable, 'bg-opacity-80': !isActive && !isValueSet && submittable, 'outline-[#2563EB] outline-dashed outline-2 z-10 field-area-active': isActive && submittable, 'bg-opacity-40': (isActive || isValueSet) && submittable }"
+    :class="{ 'cursor-default': !submittable, 'border border-[#E2E8F0] bg-[#F8FAFC] cursor-pointer': submittable, 'border border-[#E2E8F0]': !isActive && submittable, 'bg-opacity-80': !isActive && !isValueSet && submittable, 'outline-[#2563EB] outline-dashed outline-2 z-10 field-area-active': isActive && submittable, 'bg-opacity-40': (isActive || isValueSet) && submittable }"
     :role="submittable && !isNativeInputField ? 'button' : undefined"
     :tabindex="submittable && !isNativeInputField ? 0 : undefined"
     :aria-label="submittable && !isNativeInputField ? fieldAreaLabel : undefined"
