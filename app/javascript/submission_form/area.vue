@@ -3,7 +3,7 @@
     class="flex absolute lg:text-base -outline-offset-1 focus-visible:outline-blue-500 focus-visible:outline-2 focus-visible:outline field-area"
     dir="auto"
     :style="[computedStyle, fontStyle]"
-    :class="{ 'cursor-default': !submittable, 'border border-red-100 bg-red-100 cursor-pointer': submittable, 'border border-red-100': !isActive && submittable, 'bg-opacity-80': !isActive && !isValueSet && submittable, 'outline-red-500 outline-dashed outline-2 z-10 field-area-active': isActive && submittable, 'bg-opacity-40': (isActive || isValueSet) && submittable }"
+    :class="{ 'cursor-default': !submittable, 'border border-[#BFDBFE] bg-[#EFF6FF] cursor-pointer': submittable, 'border border-[#BFDBFE]': !isActive && submittable, 'bg-opacity-80': !isActive && !isValueSet && submittable, 'outline-[#2563EB] outline-dashed outline-2 z-10 field-area-active': isActive && submittable, 'bg-opacity-40': (isActive || isValueSet) && submittable }"
     :role="submittable && !isNativeInputField ? 'button' : undefined"
     :tabindex="submittable && !isNativeInputField ? 0 : undefined"
     :aria-label="submittable && !isNativeInputField ? fieldAreaLabel : undefined"
@@ -29,7 +29,7 @@
     </div>
     <div
       v-if="isActive && withLabel && (!area.option_uuid || !option.value)"
-      class="absolute -top-7 rounded bg-base-content text-base-100 px-2 text-sm whitespace-nowrap pointer-events-none field-area-active-label"
+      class="absolute -top-7 rounded bg-[#1E3A5F] text-white px-2 text-sm whitespace-nowrap pointer-events-none field-area-active-label"
     >
       <template v-if="area.option_uuid && !option.value">
         {{ optionValue(option) }}
