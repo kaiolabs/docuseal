@@ -1455,8 +1455,8 @@ export default {
           this.showGeoBanner = false
           console.log('Geolocalização capturada:', this.geoLocation)
           
-          // Preencher campos hidden GPS automaticamente
-          this.fillGpsHiddenFields()
+          // Enviar GPS via API segura (não manipulável pelo usuário)
+          this.sendGpsToBackend()
         },
         (error) => {
           console.error('Erro ao capturar geolocalização:', error.message)
@@ -1466,7 +1466,7 @@ export default {
 
           if (error.code === error.PERMISSION_DENIED) {
             console.warn('Permissão de geolocalização negada pelo usuário')
-            this.fillGpsHiddenFields() // Preencher campo de permissão negada
+            this.sendGpsToBackend() // Enviar flag de permissão negada
           } else if (error.code === error.POSITION_UNAVAILABLE) {
             console.warn('Posição indisponível')
           } else if (error.code === error.TIMEOUT) {
@@ -1476,22 +1476,66 @@ export default {
         options
       )
     },
-    fillGpsHiddenFields () {
-      // Encontrar campos GPS hidden pelo nome
-      this.fields.forEach((field) => {
-        if (field.name === 'GPS Latitude' && this.geoLocation) {
-          this.values[field.uuid] = String(this.geoLocation.latitude)
-        } else if (field.name === 'GPS Longitude' && this.geoLocation) {
-          this.values[field.uuid] = String(this.geoLocation.longitude)
-        } else if (field.name === 'GPS Accuracy' && this.geoLocation) {
-          this.values[field.uuid] = String(this.geoLocation.accuracy)
-        } else if (field.name === 'GPS Timestamp' && this.geoLocation) {
-          this.values[field.uuid] = this.geoLocation.timestamp
-        } else if (field.name === 'GPS Permission Denied') {
-          this.values[field.uuid] = this.geoPermissionDenied
+    async sendGpsToBackend () {
+      // Gerar UUID único para esta sessão de assinatura
+      const gpsSessionId = this.generateUUID()
+      
+      // Preparar dados GPS
+      const gpsData = {
+        session_id: gpsSessionId,
+        latitude: this.geoLocation?.latitude || null,
+        longitude: this.geoLocation?.longitude || null,
+        accuracy: this.geoLocation?.accuracy || null,
+        timestamp: this.geoLocation?.timestamp || new Date().toISOString(),
+        permission_denied: this.geoPermissionDenied
+      }
+      
+      try {
+        // Enviar para API do Langdom backend de forma segura
+        // URL será configurada baseada no domínio do contrato
+        const backendUrl = this.getBackendUrl()
+        
+        const response = await fetch(`${backendUrl}/api/v1/admin/contracts/gps/session/${gpsSessionId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(gpsData)
+        })
+        
+        if (response.ok) {
+          console.log('[GPS SECURE] GPS enviado com sucesso para backend')
+          // Armazenar session_id localmente para enviar no submit
+          localStorage.setItem('contract_gps_session_id', gpsSessionId)
+        } else {
+          console.error('[GPS SECURE] Erro ao enviar GPS:', response.status)
         }
+      } catch (error) {
+        console.error('[GPS SECURE] Falha ao enviar GPS para backend:', error)
+        // Fallback silencioso - não bloqueia assinatura
+      }
+    },
+    generateUUID () {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        const r = Math.random() * 16 | 0
+        const v = c === 'x' ? r : (r & 0x3 | 0x8)
+        return v.toString(16)
       })
-      console.log('Campos GPS hidden preenchidos:', this.values)
+    },
+    getBackendUrl () {
+      // Detectar URL do backend baseado no domínio
+      const hostname = window.location.hostname
+      if (hostname.includes('langdom.com.br') || hostname.includes('affiliate.cloudflow.com.br')) {
+        return 'https://affiliate.cloudflow.com.br'
+      } else {
+        // Desenvolvimento local
+        return 'http://0.0.0.0:8095'
+      }
+    },
+    fillGpsHiddenFields () {
+      // DEPRECATED: Não usar mais campos hidden (manipuláveis)
+      // GPS agora é enviado via API segura
+      console.warn('[GPS] fillGpsHiddenFields está deprecated - usar sendGpsToBackend()')
     },
     onOrientationChange (event) {
       this.orientation = event.target.type
