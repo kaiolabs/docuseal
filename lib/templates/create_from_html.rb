@@ -145,8 +145,8 @@ module Templates
       return if pages.blank?
 
       area.merge!(MATRICULA_SIGNATURE_AREA)
-      # HexaPDF usa índice de página 1-based; última página do PDF
-      area['page'] = pages.size
+      # UI de assinatura e HexaPDF usam índice 0-based (páginas 0..n-1)
+      area['page'] = pages.size - 1
     end
 
     def calculate_field_area(detected, pages, document, document_height_px = nil)
