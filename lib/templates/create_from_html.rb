@@ -7,13 +7,7 @@ module Templates
     RENDER_SCRIPT_PATH = Rails.root.join('lib/templates/render_html_template.js').freeze
     RENDER_TIMEOUT_SECONDS = 60
 
-    # Posição calibrada manualmente no template de matrícula Langdom (template #23)
-    MATRICULA_SIGNATURE_AREA = {
-      'x' => 0.520694,
-      'y' => 0.372868,
-      'w' => 0.332078,
-      'h' => 0.058196
-    }.freeze
+    # Índice da última página (0-based) para contratos multipágina Langdom
 
     module_function
 
@@ -144,8 +138,7 @@ module Templates
       return unless field['type'] == 'signature'
       return if pages.blank?
 
-      area.merge!(MATRICULA_SIGNATURE_AREA)
-      # UI de assinatura e HexaPDF usam índice 0-based (páginas 0..n-1)
+      # x/y/w/h vêm do Puppeteer (alinhados ao HTML); só garante a última página
       area['page'] = pages.size - 1
     end
 
