@@ -9,10 +9,10 @@ module Templates
 
     # Posição calibrada manualmente no template de matrícula Langdom (template #23)
     MATRICULA_SIGNATURE_AREA = {
-      'x' => 0.535694,
-      'y' => 0.396868,
-      'w' => 0.277078,
-      'h' => 0.039196
+      'x' => 0.520694,
+      'y' => 0.372868,
+      'w' => 0.332078,
+      'h' => 0.058196
     }.freeze
 
     module_function
