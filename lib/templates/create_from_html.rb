@@ -7,10 +7,11 @@ module Templates
     RENDER_SCRIPT_PATH = Rails.root.join('lib/templates/render_html_template.js').freeze
     RENDER_TIMEOUT_SECONDS = 60
 
-    # Calibrado manualmente no template #31 (Contrato Matrícula - Kaio Rodrigues)
+    # Calibrado manualmente no template #36 (Contrato Matrícula - Junho 2026)
+    # Ajustado com espaçamento melhorado para campos de assinatura
     MATRICULA_SIGNATURE_AREA = {
-      'x' => 0.525210,
-      'y' => 0.419332,
+      'x' => 0.527165,
+      'y' => 0.043225,
       'w' => 0.297853,
       'h' => 0.059918
     }.freeze
