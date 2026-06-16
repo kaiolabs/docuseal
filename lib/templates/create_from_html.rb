@@ -16,6 +16,20 @@ module Templates
       'h' => 0.059918
     }.freeze
 
+    MATRICULA_CPF_AREA = {
+      'x' => 0.602433,
+      'y' => 0.220211,
+      'w' => 0.151134,
+      'h' => 0.020266
+    }.freeze
+
+    MATRICULA_CHECKBOX_AREA = {
+      'x' => 0.424677,
+      'y' => 0.838541,
+      'w' => 0.156971,
+      'h' => 0.023762
+    }.freeze
+
     module_function
 
     def call(template, html_body, params = {})
@@ -134,20 +148,34 @@ module Templates
         end
 
         area = calculate_field_area(detected, pages, document, document_height_px)
-        apply_matricula_signature_position!(field, area, pages) if area
+        apply_matricula_field_positions!(field, area, pages) if area
         field['areas'] = [area] if area
 
         field
       end
     end
 
-    def apply_matricula_signature_position!(field, area, pages)
-      return unless field['type'] == 'signature'
+    def apply_matricula_field_positions!(field, area, pages)
       return if pages.blank?
 
-      area.merge!(MATRICULA_SIGNATURE_AREA)
-      area['page'] = pages.size - 1
-      field['preferences'] = { 'format' => 'typed' }
+      case field['type']
+      when 'signature'
+        if field['name']&.include?('Responsável')
+          area.merge!(MATRICULA_SIGNATURE_AREA)
+          area['page'] = pages.size - 1
+          field['preferences'] = { 'format' => 'typed' }
+        end
+      when 'text'
+        if field['name']&.include?('CPF')
+          area.merge!(MATRICULA_CPF_AREA)
+          area['page'] = pages.size - 1
+        end
+      when 'checkbox'
+        if field['name']&.include?('aceito os termos')
+          area.merge!(MATRICULA_CHECKBOX_AREA)
+          area['page'] = pages.size - 2  # Página anterior à última
+        end
+      end
     end
 
     def calculate_field_area(detected, pages, document, document_height_px = nil)
