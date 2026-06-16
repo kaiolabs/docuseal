@@ -146,6 +146,7 @@ module Templates
 
       area.merge!(MATRICULA_SIGNATURE_AREA)
       area['page'] = pages.size - 1
+      field['preferences'] = { 'format' => 'typed' }
     end
 
     def calculate_field_area(detected, pages, document, document_height_px = nil)
