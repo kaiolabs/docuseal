@@ -1089,7 +1089,8 @@ export default {
       geoLocation: null,
       geoPermissionDenied: false,
       geoRequestInProgress: false,
-      showGeoBanner: false
+      showGeoBanner: false,
+      gpsSessionId: null
     }
   },
   computed: {
@@ -1507,6 +1508,22 @@ export default {
           console.log('[GPS SECURE] GPS enviado com sucesso para backend')
           // Armazenar session_id localmente para enviar no submit
           localStorage.setItem('contract_gps_session_id', gpsSessionId)
+          
+          // Armazenar session_id como propriedade da instância Vue
+          this.gpsSessionId = gpsSessionId
+          
+          // Encontrar campo gpsSessionId no schema e popular
+          const gpsField = this.fields.find(f => 
+            f.name && f.name.toLowerCase().includes('gpssessionid')
+          )
+          
+          if (gpsField) {
+            // Preencher o valor do campo hidden
+            this.$set(this.values, gpsField.uuid, gpsSessionId)
+            console.log('[GPS SECURE] gpsSessionId definido no formulário:', gpsSessionId)
+          } else {
+            console.warn('[GPS SECURE] Campo gpsSessionId não encontrado no schema')
+          }
         } else {
           console.error('[GPS SECURE] Erro ao enviar GPS:', response.status)
         }
