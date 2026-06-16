@@ -38,7 +38,7 @@
       :maxlength="cellsMaxLegth"
       dir="auto"
       class="base-input !text-2xl w-full"
-      :class="{ '!pr-11 -mr-10': !field.validation?.pattern }"
+      :class="{ '!pr-11 -mr-10': !field.validation?.pattern, 'input-error': cpfError }"
       :required="field.required"
       :pattern="field.validation?.pattern"
       :title="validationMessage"
@@ -47,7 +47,14 @@
       type="text"
       :name="`values[${field.uuid}]`"
       @focus="$emit('focus')"
+      @blur="validateCpfIfNeeded"
     >
+    <div
+      v-if="cpfError"
+      class="text-error text-sm mt-1 px-1"
+    >
+      {{ cpfError }}
+    </div>
     <textarea
       v-if="isTextArea"
       :id="field.uuid"
@@ -111,10 +118,16 @@ export default {
   emits: ['update:model-value', 'focus'],
   data () {
     return {
-      isTextArea: false
+      isTextArea: false,
+      cpfError: null
     }
   },
   computed: {
+    isCpfField () {
+      const name = (this.field.name || '').toLowerCase()
+      const title = (this.field.title || '').toLowerCase()
+      return name.includes('cpf') || title.includes('cpf')
+    },
     cellsMaxLegth () {
       if (this.field.type === 'cells') {
         const area = this.field.areas?.[0]
@@ -188,6 +201,47 @@ export default {
     }
   },
   methods: {
+    validateCpfIfNeeded () {
+      if (!this.isCpfField || !this.text) {
+        this.cpfError = null
+        return
+      }
+
+      if (!this.validateCpf(this.text)) {
+        this.cpfError = 'CPF inválido. Por favor, verifique o número digitado.'
+      } else {
+        this.cpfError = null
+      }
+    },
+    validateCpf (cpf) {
+      if (!cpf) return true // Permite vazio se não for required
+
+      const cleaned = cpf.replace(/\D/g, '')
+      if (cleaned.length !== 11) return false
+
+      // Validação de dígitos verificadores
+      if (/^(\d)\1{10}$/.test(cleaned)) return false
+
+      let sum = 0
+      let remainder
+
+      for (let i = 1; i <= 9; i++) {
+        sum += parseInt(cleaned.substring(i - 1, i)) * (11 - i)
+      }
+      remainder = (sum * 10) % 11
+      if (remainder === 10 || remainder === 11) remainder = 0
+      if (remainder !== parseInt(cleaned.substring(9, 10))) return false
+
+      sum = 0
+      for (let i = 1; i <= 10; i++) {
+        sum += parseInt(cleaned.substring(i - 1, i)) * (12 - i)
+      }
+      remainder = (sum * 10) % 11
+      if (remainder === 10 || remainder === 11) remainder = 0
+      if (remainder !== parseInt(cleaned.substring(10, 11))) return false
+
+      return true
+    },
     resizeTextarea () {
       const textarea = this.$refs.textarea
 
