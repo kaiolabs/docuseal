@@ -1454,6 +1454,9 @@ export default {
           this.geoRequestInProgress = false
           this.showGeoBanner = false
           console.log('Geolocalização capturada:', this.geoLocation)
+          
+          // Preencher campos hidden GPS automaticamente
+          this.fillGpsHiddenFields()
         },
         (error) => {
           console.error('Erro ao capturar geolocalização:', error.message)
@@ -1463,6 +1466,7 @@ export default {
 
           if (error.code === error.PERMISSION_DENIED) {
             console.warn('Permissão de geolocalização negada pelo usuário')
+            this.fillGpsHiddenFields() // Preencher campo de permissão negada
           } else if (error.code === error.POSITION_UNAVAILABLE) {
             console.warn('Posição indisponível')
           } else if (error.code === error.TIMEOUT) {
@@ -1471,6 +1475,23 @@ export default {
         },
         options
       )
+    },
+    fillGpsHiddenFields () {
+      // Encontrar campos GPS hidden pelo nome
+      this.fields.forEach((field) => {
+        if (field.name === 'GPS Latitude' && this.geoLocation) {
+          this.values[field.uuid] = String(this.geoLocation.latitude)
+        } else if (field.name === 'GPS Longitude' && this.geoLocation) {
+          this.values[field.uuid] = String(this.geoLocation.longitude)
+        } else if (field.name === 'GPS Accuracy' && this.geoLocation) {
+          this.values[field.uuid] = String(this.geoLocation.accuracy)
+        } else if (field.name === 'GPS Timestamp' && this.geoLocation) {
+          this.values[field.uuid] = this.geoLocation.timestamp
+        } else if (field.name === 'GPS Permission Denied') {
+          this.values[field.uuid] = this.geoPermissionDenied
+        }
+      })
+      console.log('Campos GPS hidden preenchidos:', this.values)
     },
     onOrientationChange (event) {
       this.orientation = event.target.type
@@ -1754,14 +1775,6 @@ export default {
         if (isLastStep && !emptyRequiredField && !this.inviteSubmitters.length && !this.optionalInviteSubmitters.length) {
           formData.append('completed', 'true')
           formData.append('timezone', Intl.DateTimeFormat().resolvedOptions().timeZone)
-          
-          // Adicionar dados de geolocalização se disponível
-          if (this.geoLocation) {
-            formData.append('geo_location', JSON.stringify(this.geoLocation))
-          }
-          if (this.geoPermissionDenied) {
-            formData.append('geo_permission_denied', 'true')
-          }
         }
 
         let saveStepRequest
