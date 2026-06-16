@@ -7,6 +7,14 @@ module Templates
     RENDER_SCRIPT_PATH = Rails.root.join('lib/templates/render_html_template.js').freeze
     RENDER_TIMEOUT_SECONDS = 60
 
+    # Posição calibrada manualmente no template de matrícula Langdom (template #23)
+    MATRICULA_SIGNATURE_AREA = {
+      'x' => 0.535694,
+      'y' => 0.396868,
+      'w' => 0.277078,
+      'h' => 0.039196
+    }.freeze
+
     module_function
 
     def call(template, html_body, params = {})
@@ -125,10 +133,20 @@ module Templates
         end
 
         area = calculate_field_area(detected, pages, document, document_height_px)
+        apply_matricula_signature_position!(field, area, pages) if area
         field['areas'] = [area] if area
 
         field
       end
+    end
+
+    def apply_matricula_signature_position!(field, area, pages)
+      return unless field['type'] == 'signature'
+      return if pages.blank?
+
+      area.merge!(MATRICULA_SIGNATURE_AREA)
+      # HexaPDF usa índice de página 1-based; última página do PDF
+      area['page'] = pages.size
     end
 
     def calculate_field_area(detected, pages, document, document_height_px = nil)
