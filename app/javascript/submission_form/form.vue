@@ -74,6 +74,37 @@
     :readonly-values="readonlyFieldValues"
     :values="values"
   />
+  <!-- Banner de Geolocalização -->
+  <div
+    v-if="showGeoBanner"
+    class="fixed top-0 left-0 right-0 z-50 bg-blue-600 text-white px-4 py-3 shadow-lg"
+    role="alert"
+  >
+    <div class="flex items-center justify-center">
+      <svg
+        class="w-5 h-5 mr-2 animate-pulse"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+        />
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+        />
+      </svg>
+      <span class="font-medium">
+        Solicitando permissão de localização para validação do contrato...
+      </span>
+    </div>
+  </div>
   <Teleport
     v-if="completeButtonToRef"
     :to="completeButtonToRef"
@@ -1053,7 +1084,12 @@ export default {
       submittedValues: {},
       isFormStarted: false,
       recalculateButtonDisabledKey: '',
-      isAccessibilityMode: false
+      isAccessibilityMode: false,
+      // Geolocation tracking
+      geoLocation: null,
+      geoPermissionDenied: false,
+      geoRequestInProgress: false,
+      showGeoBanner: false
     }
   },
   computed: {
@@ -1379,10 +1415,62 @@ export default {
         })
       }
     })
+
+    // Solicitar geolocalização após o formulário carregar
+    this.$nextTick(() => {
+      this.requestGeolocation()
+    })
   },
   methods: {
     t (key) {
       return this.i18n[key] || i18n[this.language?.toLowerCase()]?.[key] || i18n[this.browserLanguage]?.[key] || i18n.en[key] || key
+    },
+    requestGeolocation () {
+      if (!navigator.geolocation) {
+        console.warn('Geolocation não suportada pelo navegador')
+        this.geoPermissionDenied = true
+        this.showGeoBanner = false
+        return
+      }
+
+      this.geoRequestInProgress = true
+      this.showGeoBanner = true
+
+      const options = {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          this.geoLocation = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+            timestamp: new Date(position.timestamp).toISOString()
+          }
+          this.geoPermissionDenied = false
+          this.geoRequestInProgress = false
+          this.showGeoBanner = false
+          console.log('Geolocalização capturada:', this.geoLocation)
+        },
+        (error) => {
+          console.error('Erro ao capturar geolocalização:', error.message)
+          this.geoPermissionDenied = true
+          this.geoRequestInProgress = false
+          this.showGeoBanner = false
+
+          if (error.code === error.PERMISSION_DENIED) {
+            console.warn('Permissão de geolocalização negada pelo usuário')
+          } else if (error.code === error.POSITION_UNAVAILABLE) {
+            console.warn('Posição indisponível')
+          } else if (error.code === error.TIMEOUT) {
+            console.warn('Timeout ao obter posição')
+          }
+        },
+        options
+      )
     },
     onOrientationChange (event) {
       this.orientation = event.target.type
@@ -1666,6 +1754,14 @@ export default {
         if (isLastStep && !emptyRequiredField && !this.inviteSubmitters.length && !this.optionalInviteSubmitters.length) {
           formData.append('completed', 'true')
           formData.append('timezone', Intl.DateTimeFormat().resolvedOptions().timeZone)
+          
+          // Adicionar dados de geolocalização se disponível
+          if (this.geoLocation) {
+            formData.append('geo_location', JSON.stringify(this.geoLocation))
+          }
+          if (this.geoPermissionDenied) {
+            formData.append('geo_permission_denied', 'true')
+          }
         }
 
         let saveStepRequest
