@@ -163,7 +163,8 @@ module Templates
         if field['name']&.include?('Responsável')
           area.merge!(MATRICULA_SIGNATURE_AREA)
           area['page'] = pages.size - 1
-          field['preferences'] = { 'format' => 'typed' }
+          # Permitir digitado OU desenhado (usuário escolhe)
+          field['preferences'] = { 'format' => 'typed,drawn' }
         end
       when 'text'
         if field['name']&.include?('CPF')
