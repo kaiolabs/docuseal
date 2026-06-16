@@ -63,7 +63,7 @@ module Templates
 
       style = case type
               when 'signature', 'initials', 'stamp', 'image'
-                'display:block;width:280px;max-width:100%;height:64px;margin:0 auto;'
+                'display:block;width:236px;max-width:100%;height:67px;margin:0 auto;'
               when 'date'
                 'display:block;width:130px;height:24px;margin:0 auto;'
               when 'checkbox'

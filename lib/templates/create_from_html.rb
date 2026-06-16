@@ -7,7 +7,13 @@ module Templates
     RENDER_SCRIPT_PATH = Rails.root.join('lib/templates/render_html_template.js').freeze
     RENDER_TIMEOUT_SECONDS = 60
 
-    # Índice da última página (0-based) para contratos multipágina Langdom
+    # Calibrado manualmente no template #31 (Contrato Matrícula - Kaio Rodrigues)
+    MATRICULA_SIGNATURE_AREA = {
+      'x' => 0.525210,
+      'y' => 0.419332,
+      'w' => 0.297853,
+      'h' => 0.059918
+    }.freeze
 
     module_function
 
@@ -138,7 +144,7 @@ module Templates
       return unless field['type'] == 'signature'
       return if pages.blank?
 
-      # x/y/w/h vêm do Puppeteer (alinhados ao HTML); só garante a última página
+      area.merge!(MATRICULA_SIGNATURE_AREA)
       area['page'] = pages.size - 1
     end
 
